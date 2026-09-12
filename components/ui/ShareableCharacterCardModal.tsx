@@ -27,8 +27,8 @@ export function ShareableCharacterCardModal({
   if (!isOpen || !match) return null;
 
   const profileUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/dashboard?user=${encodeURIComponent(username)}`
-    : `https://animeos.app/dashboard?user=${encodeURIComponent(username)}`;
+    ? `${window.location.origin}/profile/${encodeURIComponent(username)}`
+    : `https://animeos.app/profile/${encodeURIComponent(username)}`;
 
   const shareText = `I got matched as ${match.characterName} (${match.animeTitle}) on AnimeOS with a ${match.matchPercentage}% compatibility match!\nProfile: ${profileUrl}`;
 

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SyncStatusModal, SyncState } from '@/components/ui/SyncStatusModal';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { User, RefreshCw, Star, ShieldCheck, Film, ExternalLink, Calendar, CheckCircle2 } from 'lucide-react';
 import { ComputedUserAnalytics } from '@/types/analytics';
 
@@ -83,17 +84,12 @@ export default function ProfilePage() {
               {/* Account Banner */}
               <div className="obsidian-card-elevated p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.username}
-                      className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-[#27272A]"
-                    />
-                  ) : (
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-[#18181C] border-2 border-[#27272A] flex items-center justify-center text-xl font-bold text-[#6366F1]">
-                      {user.username[0]?.toUpperCase()}
-                    </div>
-                  )}
+                  <SafeImage
+                    src={user.avatar}
+                    alt={user.username}
+                    className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-[#27272A]"
+                    fallbackLabel={user.username}
+                  />
 
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
