@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { RecommendationCard } from '@/components/recommendations/RecommendationCard';
 import { RecommendedAnimeCard } from '@/lib/recommendations/recommendationEngine';
 import { RecommendationSkeleton } from '@/components/ui/SkeletonLoaders';
+import { SyncStatusModal, SyncState } from '@/components/ui/SyncStatusModal';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Compass } from 'lucide-react';
 
@@ -17,37 +18,54 @@ export default function RecommendationsPage() {
   const [recommendations, setRecommendations] = useState<RecommendedAnimeCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ username: string; avatar?: string; isDemo?: boolean } | null>(null);
+  const [syncState, setSyncState] = useState<SyncState>('idle');
+  const [syncError, setSyncError] = useState<string>('');
+
+  const loadData = async () => {
+    try {
+      const [meRes, recRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch('/api/recommendations'),
+      ]);
+
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        setUser(meData.user);
+      }
+
+      if (recRes.ok) {
+        const recData: RecommendationsResponse = await recRes.json();
+        setRecommendations(recData.recommendations);
+      }
+    } catch (err) {
+      console.error('Failed to load recommendations:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [meRes, recRes] = await Promise.all([
-          fetch('/api/auth/me'),
-          fetch('/api/recommendations'),
-        ]);
-
-        if (meRes.ok) {
-          const meData = await meRes.json();
-          setUser(meData.user);
-        }
-
-        if (recRes.ok) {
-          const recData: RecommendationsResponse = await recRes.json();
-          setRecommendations(recData.recommendations);
-        }
-      } catch (err) {
-        console.error('Failed to load recommendations:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadData();
   }, []);
 
+  const handleSync = async () => {
+    setSyncState('syncing');
+    setSyncError('');
+    try {
+      const res = await fetch('/api/sync', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to synchronize with AniList');
+      await loadData();
+      setSyncState('complete');
+    } catch (err: any) {
+      console.error('Sync failed:', err);
+      setSyncError(err?.message || 'Failed to update library.');
+      setSyncState('error');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col selection:bg-[#6366F1]/30 selection:text-white">
-      <Navbar user={user} />
+      <Navbar user={user} onSync={handleSync} isSyncing={syncState === 'syncing'} />
 
       <div className="flex flex-1">
         <Sidebar />
@@ -79,6 +97,14 @@ export default function RecommendationsPage() {
           )}
         </main>
       </div>
+
+      <SyncStatusModal
+        status={syncState}
+        updatedCount={recommendations.length}
+        errorMessage={syncError}
+        onClose={() => setSyncState('idle')}
+        onRetry={handleSync}
+      />
     </div>
   );
 }
