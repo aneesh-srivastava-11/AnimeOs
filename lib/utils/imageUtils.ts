@@ -5,9 +5,9 @@
 /**
  * Returns an ordered array of candidate image URLs to attempt when loading images.
  * Priority:
- * 1. Direct URL (with referrerPolicy="no-referrer")
- * 2. High-availability image proxy (wsrv.nl / weserv)
- * 3. Additional fallback image proxy
+ * 1. Local Same-Origin Proxy (`/api/proxy-image?url=...`) - Solves CORS for html-to-image download & referrer blocks
+ * 2. Direct URL
+ * 3. High-availability external image proxy (wsrv.nl)
  */
 export function getImageCandidates(primarySrc?: string | null): string[] {
   if (!primarySrc || typeof primarySrc !== 'string') return [];
@@ -15,15 +15,43 @@ export function getImageCandidates(primarySrc?: string | null): string[] {
   const trimmed = primarySrc.trim();
   if (!trimmed) return [];
 
-  const candidates: string[] = [trimmed];
+  // If already relative / proxy / data URL, return direct
+  if (trimmed.startsWith('/') || trimmed.startsWith('data:')) {
+    return [trimmed];
+  }
 
-  // If it's a remote http/https URL, add proxy mirrors as fallbacks
+  const candidates: string[] = [];
+
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    // wsrv.nl image cache & proxy (strips referrer, adds CORS headers, caches high quality)
-    const encoded = encodeURIComponent(trimmed);
-    candidates.push(`https://wsrv.nl/?url=${encoded}&output=webp`);
-    candidates.push(`https://images.weserv.nl/?url=${encoded}`);
+    // 1. Same-origin server proxy (bypasses CORS and referrer blocking completely for browser & html-to-image card downloads)
+    candidates.push(`/api/proxy-image?url=${encodeURIComponent(trimmed)}`);
+    // 2. Direct URL fallback
+    candidates.push(trimmed);
+    // 3. High-availability external proxy
+    candidates.push(`https://wsrv.nl/?url=${encodeURIComponent(trimmed)}`);
+  } else {
+    candidates.push(trimmed);
   }
 
   return candidates;
+}
+
+/**
+ * Helper to convert an image URL to a base64 Data URL (useful for canvas / html-to-image export)
+ */
+export async function urlToBase64(url: string): Promise<string> {
+  try {
+    const proxyUrl = url.startsWith('/') ? url : `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.error('Failed to convert image to Base64:', err);
+    return url;
+  }
 }

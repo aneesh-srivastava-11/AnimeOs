@@ -42,7 +42,9 @@ export function ShareableAnimeCardModal({
   if (!isOpen || !anime) return null;
 
   const scoreDisplay = anime.score ? `${anime.score}/10` : (anime.averageScore ? `${anime.averageScore}%` : 'N/A');
-  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : 'https://animeos.app/dashboard';
+  const profileUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/dashboard?user=${encodeURIComponent(username)}`
+    : `https://animeos.app/dashboard?user=${encodeURIComponent(username)}`;
   const shareText = `Check out my rating for ${anime.titleRomaji} on AnimeOS!\nMy Rating: ${scoreDisplay}\nProfile: ${profileUrl}`;
 
   const handleDownload = async () => {

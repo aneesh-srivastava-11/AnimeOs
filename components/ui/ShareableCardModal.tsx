@@ -23,7 +23,9 @@ export function ShareableCardModal({ isOpen, onClose, analytics, username = 'Vie
 
   const character = analytics.characterMatch;
   const archetype = analytics.archetype?.primary;
-  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : 'https://animeos.app/dashboard';
+  const profileUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/dashboard?user=${encodeURIComponent(username)}`
+    : `https://animeos.app/dashboard?user=${encodeURIComponent(username)}`;
   const shareText = `Check out my AnimeOS Taste Summary for @${username}!\nProfile: ${profileUrl}`;
 
   const handleDownload = async () => {

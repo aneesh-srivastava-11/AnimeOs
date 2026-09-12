@@ -1,21 +1,30 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
 import { syncUserAniList } from '@/lib/anilist/sync';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getSession();
+  const searchParams = request.nextUrl.searchParams;
+  const requestedUser = searchParams.get('user');
 
-  // If no active session, compute analytics for demo dataset automatically
-  const userId = session?.userId || 'demo-user-1';
-  const anilistId = session?.anilistId || 999999;
-  const accessToken = session?.accessToken;
+  // Determine user to load
+  const isSelf = !requestedUser || requestedUser.toLowerCase() === session?.username?.toLowerCase();
+
+  const username = isSelf ? (session?.username || 'OtakuExplorer') : requestedUser;
+  const userId = isSelf ? (session?.userId || 'demo-user-1') : `public-user-${username}`;
+  const anilistId = isSelf ? (session?.anilistId || 999999) : 999999;
+  const accessToken = isSelf ? session?.accessToken : undefined;
 
   const result = await syncUserAniList(userId, anilistId, accessToken);
+
   return NextResponse.json({
     user: {
-      username: session?.username || 'OtakuExplorer',
-      avatar: session?.avatar || 'https://s4.anilist.co/file/anilistcdn/user/avatar/large/default.png',
-      isDemo: session?.isDemo ?? true,
+      username: username,
+      avatar: isSelf
+        ? (session?.avatar || 'https://s4.anilist.co/file/anilistcdn/user/avatar/large/default.png')
+        : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`,
+      isDemo: isSelf ? (session?.isDemo ?? true) : false,
+      isPublicView: !isSelf,
     },
     analytics: result.analytics,
     library: result.userAnimes,

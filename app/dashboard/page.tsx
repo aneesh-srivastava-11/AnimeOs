@@ -36,7 +36,11 @@ export default function DashboardPage() {
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch('/api/dashboard');
+      const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const userParam = searchParams?.get('user');
+      const endpoint = userParam ? `/api/dashboard?user=${encodeURIComponent(userParam)}` : '/api/dashboard';
+
+      const res = await fetch(endpoint);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -109,7 +113,7 @@ export default function DashboardPage() {
               <StatCards analytics={data.analytics} />
 
               {/* Headline Feature 1: Anime Character Persona Match */}
-              <CharacterMatchCard match={data.analytics.characterMatch} />
+              <CharacterMatchCard match={data.analytics.characterMatch} username={username} />
 
               {/* Headline Feature 2: Primary & Secondary Archetypes */}
               <ArchetypeCard archetype={data.analytics.archetype} />
