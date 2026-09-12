@@ -5,7 +5,9 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { RecommendationCard } from '@/components/recommendations/RecommendationCard';
 import { RecommendedAnimeCard } from '@/lib/recommendations/recommendationEngine';
-import { Compass, Sparkles } from 'lucide-react';
+import { RecommendationSkeleton } from '@/components/ui/SkeletonLoaders';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Compass } from 'lucide-react';
 
 interface RecommendationsResponse {
   recommendations: RecommendedAnimeCard[];
@@ -44,7 +46,7 @@ export default function RecommendationsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#090D16] flex flex-col">
+    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col selection:bg-[#6366F1]/30 selection:text-white">
       <Navbar user={user} />
 
       <div className="flex flex-1">
@@ -52,34 +54,28 @@ export default function RecommendationsPage() {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 w-full">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2.5">
-              Personalized Recommendations
-              <Sparkles className="h-6 w-6 text-indigo-400" />
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F5]">
+              Made for your taste
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Shows selected specifically for your Anime DNA with clear match explanations.
+            <p className="text-xs sm:text-sm text-[#A1A1AA] mt-1">
+              Curated candidate shows based on your Anime DNA preferences and score behavior.
             </p>
           </div>
 
           {loading ? (
-            <div className="space-y-4 animate-pulse">
-              <div className="h-44 rounded-2xl bg-slate-900/60 border border-slate-800" />
-              <div className="h-44 rounded-2xl bg-slate-900/60 border border-slate-800" />
-            </div>
+            <RecommendationSkeleton />
           ) : recommendations.length > 0 ? (
-            <div className="space-y-5">
+            <div className="space-y-4 animate-fade-in">
               {recommendations.map((item) => (
                 <RecommendationCard key={item.id} item={item} />
               ))}
             </div>
           ) : (
-            <div className="glass-panel rounded-2xl p-12 text-center border border-slate-800">
-              <Compass className="mx-auto h-8 w-8 text-slate-600 mb-2" />
-              <h3 className="text-sm font-semibold text-slate-300">No Recommendations Found</h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Rate more anime on AniList to help our recommendation engine learn your taste.
-              </p>
-            </div>
+            <EmptyState
+              title="No Recommendations Available"
+              description="Rate and complete more anime on AniList so our recommendation engine can curate shows for your taste."
+              icon={Compass}
+            />
           )}
         </main>
       </div>

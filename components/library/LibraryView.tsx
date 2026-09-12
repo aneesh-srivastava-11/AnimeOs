@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Search, Star, ExternalLink, Filter, ArrowUpDown } from 'lucide-react';
 import { SyncedUserAnime } from '@/types/analytics';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 interface LibraryViewProps {
   library: SyncedUserAnime[];
@@ -11,9 +12,9 @@ interface LibraryViewProps {
 export function LibraryView({ library }: LibraryViewProps) {
   const [activeStatus, setActiveStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'score' | 'title' | 'progress'>('score');
+  const [sortBy, setSortBy] = useState<'score' | 'title' | 'progress' | 'updated'>('score');
 
-  const statuses = ['ALL', 'COMPLETED', 'CURRENT', 'PLANNING', 'DROPPED', 'PAUSED'];
+  const statuses = ['ALL', 'CURRENT', 'COMPLETED', 'PLANNING', 'DROPPED', 'PAUSED'];
 
   const filtered = library.filter((item) => {
     const matchesStatus = activeStatus === 'ALL' || item.status === activeStatus;
@@ -28,110 +29,124 @@ export function LibraryView({ library }: LibraryViewProps) {
   filtered.sort((a, b) => {
     if (sortBy === 'score') return b.score - a.score;
     if (sortBy === 'progress') return b.progress - a.progress;
+    if (sortBy === 'updated') {
+      const timeB = b.completedAt ? new Date(b.completedAt).getTime() : (b.startedAt ? new Date(b.startedAt).getTime() : 0);
+      const timeA = a.completedAt ? new Date(a.completedAt).getTime() : (a.startedAt ? new Date(a.startedAt).getTime() : 0);
+      return timeB - timeA;
+    }
     return a.anime.titleRomaji.localeCompare(b.anime.titleRomaji);
   });
 
   return (
     <div className="space-y-6">
       {/* Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-slate-800">
-        {/* Status Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 obsidian-card p-4">
+        {/* Status Filter Tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {statuses.map((st) => (
             <button
               key={st}
               onClick={() => setActiveStatus(st)}
-              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all shrink-0 ${
                 activeStatus === st
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                  ? 'bg-[#6366F1] text-white shadow-sm'
+                  : 'text-[#A1A1AA] hover:bg-[#18181C] hover:text-[#F4F4F5]'
               }`}
             >
-              {st}
+              {st === 'CURRENT' ? 'Watching' : st}
             </button>
           ))}
         </div>
 
-        {/* Search & Sort */}
+        {/* Search & Sort Input */}
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+          <div className="relative flex-1 sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#71717A]" />
             <input
               type="text"
-              placeholder="Search anime title..."
+              placeholder="Search anime..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/60 pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-[#27272A] bg-[#09090B] pl-8 pr-3 py-1.5 text-xs text-[#F4F4F5] placeholder-[#71717A] focus:border-[#6366F1] focus:outline-none transition-colors"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300">
-            <ArrowUpDown className="h-3.5 w-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 bg-[#09090B] border border-[#27272A] rounded-lg px-2.5 py-1.5 text-xs text-[#F4F4F5]">
+            <ArrowUpDown className="h-3.5 w-3.5 text-[#71717A]" />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'score' | 'title' | 'progress')}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer"
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-transparent text-xs text-[#F4F4F5] focus:outline-none cursor-pointer"
             >
-              <option value="score" className="bg-slate-900">Sort by Score</option>
-              <option value="title" className="bg-slate-900">Sort by Title</option>
-              <option value="progress" className="bg-slate-900">Sort by Progress</option>
+              <option value="score" className="bg-[#0F0F12]">Sort by Score</option>
+              <option value="title" className="bg-[#0F0F12]">Sort by Title</option>
+              <option value="progress" className="bg-[#0F0F12]">Sort by Progress</option>
+              <option value="updated" className="bg-[#0F0F12]">Recently Updated</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Anime Cards Grid */}
+      {/* Anime Grid */}
       {filtered.length === 0 ? (
-        <div className="glass-panel rounded-2xl p-12 text-center border border-slate-800">
-          <Filter className="mx-auto h-8 w-8 text-slate-600 mb-2" />
-          <h3 className="text-sm font-semibold text-slate-300">No Anime Found</h3>
-          <p className="text-xs text-slate-500 mt-1">Try adjusting your filters or search query.</p>
-        </div>
+        <EmptyState
+          title="No Anime Found"
+          description="No entries matched your filter or search query."
+          icon={Filter}
+          actionLabel="Reset Filters"
+          onAction={() => {
+            setActiveStatus('ALL');
+            setSearchQuery('');
+          }}
+        />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {filtered.map((item) => (
             <div
               key={item.id}
-              className="group glass-panel glass-panel-hover rounded-2xl overflow-hidden border border-slate-800/80 bg-slate-900/60 flex flex-col justify-between"
+              className="group obsidian-card overflow-hidden flex flex-col justify-between hover:scale-[1.02] hover:border-[#3F3F46] transition-all duration-200"
             >
-              {/* Cover Image & Score Badge */}
-              <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-950">
+              {/* Cover Image & Rating Badge */}
+              <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#09090B]">
                 {item.anime.coverImage ? (
                   <img
                     src={item.anime.coverImage}
                     alt={item.anime.titleRomaji}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="h-full w-full object-cover group-hover:brightness-110 transition-all duration-300"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-slate-600 text-xs">
+                  <div className="flex h-full items-center justify-center text-[#71717A] text-xs">
                     No Cover
                   </div>
                 )}
+
+                {/* Score Badge (Amber #F4B860) */}
                 {item.score > 0 && (
-                  <div className="absolute top-2 right-2 flex items-center gap-1 rounded-lg bg-slate-950/80 backdrop-blur-md px-2 py-0.5 border border-amber-500/30 text-amber-400 text-[10px] font-bold shadow-lg">
-                    <Star className="h-3 w-3 fill-amber-400" />
+                  <div className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-[#09090B]/85 backdrop-blur-md px-2 py-0.5 border border-[#F4B860]/30 text-[#F4B860] text-[11px] font-bold shadow-md">
+                    <Star className="h-3 w-3 fill-[#F4B860]" />
                     <span>{item.score}</span>
                   </div>
                 )}
+
                 <div className="absolute bottom-2 left-2">
-                  <span className="rounded-md bg-slate-950/80 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-semibold text-slate-300 border border-slate-800">
+                  <span className="rounded bg-[#09090B]/85 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-semibold text-[#A1A1AA] border border-[#27272A]">
                     {item.status}
                   </span>
                 </div>
               </div>
 
-              {/* Card Meta Info */}
-              <div className="p-3 flex flex-col justify-between flex-1">
+              {/* Meta info */}
+              <div className="p-3 flex flex-col justify-between flex-1 space-y-2">
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-200 line-clamp-1 group-hover:text-indigo-400 transition-colors">
+                  <h4 className="text-xs font-semibold text-[#F4F4F5] line-clamp-1 group-hover:text-[#6366F1] transition-colors">
                     {item.anime.titleRomaji}
                   </h4>
-                  <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
-                    {item.anime.genres.slice(0, 2).map((g) => g.genre.name).join(' • ')}
+                  <p className="text-[10px] text-[#71717A] line-clamp-1 mt-0.5">
+                    {item.anime.genres.slice(0, 2).map((g) => g.genre.name).join(' · ')}
                   </p>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[10px] text-slate-400">
+                <div className="pt-2 border-t border-[#1F1F22] flex items-center justify-between text-[10px] text-[#71717A]">
                   <span>
                     Ep {item.progress} / {item.anime.episodes || '?'}
                   </span>
@@ -139,7 +154,8 @@ export function LibraryView({ library }: LibraryViewProps) {
                     href={`https://anilist.co/anime/${item.anime.anilistId}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-slate-500 hover:text-indigo-400 transition-colors"
+                    className="text-[#71717A] hover:text-[#6366F1] transition-colors"
+                    title="View on AniList"
                   >
                     <ExternalLink className="h-3 w-3" />
                   </a>

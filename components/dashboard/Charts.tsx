@@ -11,6 +11,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  CartesianGrid,
 } from 'recharts';
 import { AnimeDNAGenre, ScoreDistributionItem, WatchStatusBreakdown } from '@/types/analytics';
 
@@ -20,13 +21,13 @@ interface ChartsProps {
   watchStats: WatchStatusBreakdown;
 }
 
-const STATUS_COLORS = {
-  COMPLETED: '#10B981',
-  CURRENT: '#3B82F6',
-  PLANNING: '#F59E0B',
-  PAUSED: '#8B5CF6',
-  DROPPED: '#EF4444',
-  REPEATING: '#EC4899',
+const STATUS_COLORS: Record<string, string> = {
+  COMPLETED: '#34D399', // Muted Success Green
+  CURRENT: '#6366F1',   // Electric Indigo
+  PLANNING: '#F4B860',  // Warm Amber
+  PAUSED: '#A1A1AA',    // Muted Secondary
+  DROPPED: '#F87171',   // Muted Error Red
+  REPEATING: '#8B5CF6',
 };
 
 export function Charts({ genreStats, scoreStats, watchStats }: ChartsProps) {
@@ -34,77 +35,88 @@ export function Charts({ genreStats, scoreStats, watchStats }: ChartsProps) {
     .map((key) => ({
       name: key,
       value: watchStats[key as keyof WatchStatusBreakdown] || 0,
-      color: STATUS_COLORS[key as keyof typeof STATUS_COLORS] || '#64748B',
+      color: STATUS_COLORS[key] || '#52525B',
     }))
     .filter((item) => item.value > 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Score Distribution Histogram */}
-      <div className="glass-panel rounded-2xl p-6 border border-slate-800/80 bg-slate-900/60 shadow-xl">
-        <h3 className="font-display text-sm font-bold text-slate-200 uppercase tracking-wider mb-4">
-          Score Distribution (1–10)
-        </h3>
-        <div className="h-64 w-full">
+      <div className="obsidian-card p-6 space-y-4">
+        <div>
+          <h3 className="font-display text-sm font-semibold text-[#F4F4F5]">
+            Score Distribution
+          </h3>
+          <p className="text-xs text-[#71717A]">Rating frequency from 1 to 10</p>
+        </div>
+
+        <div className="h-60 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={scoreStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="score" stroke="#64748B" fontSize={11} tickLine={false} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} allowDecimals={false} />
+            <BarChart data={scoreStats} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+              <CartesianGrid stroke="#1F1F22" strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="score" stroke="#52525B" fontSize={11} tickLine={false} />
+              <YAxis stroke="#52525B" fontSize={11} tickLine={false} allowDecimals={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0F172A',
-                  borderColor: '#334155',
-                  borderRadius: '12px',
+                  backgroundColor: '#0F0F12',
+                  borderColor: '#27272A',
+                  borderRadius: '8px',
                   fontSize: '12px',
-                  color: '#F8FAFC',
+                  color: '#F4F4F5',
                 }}
-                cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }}
               />
-              <Bar dataKey="count" fill="#6366F1" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" fill="#6366F1" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Watch Status Distribution */}
-      <div className="glass-panel rounded-2xl p-6 border border-slate-800/80 bg-slate-900/60 shadow-xl">
-        <h3 className="font-display text-sm font-bold text-slate-200 uppercase tracking-wider mb-4">
-          Library Status Breakdown
-        </h3>
-        <div className="h-64 w-full flex items-center justify-center">
+      {/* Library Status Breakdown */}
+      <div className="obsidian-card p-6 space-y-4">
+        <div>
+          <h3 className="font-display text-sm font-semibold text-[#F4F4F5]">
+            Library Status Breakdown
+          </h3>
+          <p className="text-xs text-[#71717A]">Distribution of watched, dropped, and planned anime</p>
+        </div>
+
+        <div className="h-48 w-full flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={85}
-                paddingAngle={4}
+                innerRadius={55}
+                outerRadius={75}
+                paddingAngle={3}
                 dataKey="value"
               >
                 {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#141417" strokeWidth={2} />
                 ))}
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0F172A',
-                  borderColor: '#334155',
-                  borderRadius: '12px',
+                  backgroundColor: '#0F0F12',
+                  borderColor: '#27272A',
+                  borderRadius: '8px',
                   fontSize: '12px',
-                  color: '#F8FAFC',
+                  color: '#F4F4F5',
                 }}
               />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-2">
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-1 border-t border-[#1F1F22]">
           {statusData.map((item) => (
             <div key={item.name} className="flex items-center gap-1.5 text-xs">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-slate-300 font-medium">{item.name}</span>
-              <span className="text-slate-500">({item.value})</span>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+              <span className="text-[#A1A1AA] font-medium">{item.name}</span>
+              <span className="text-[#71717A]">({item.value})</span>
             </div>
           ))}
         </div>

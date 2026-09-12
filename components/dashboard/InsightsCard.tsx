@@ -19,29 +19,31 @@ const ICON_MAP = {
 };
 
 export function InsightsCard({ insights }: InsightsCardProps) {
+  if (!insights || insights.length === 0) return null;
+
   return (
-    <div className="glass-panel rounded-2xl p-6 border border-slate-800/80 bg-slate-900/60 shadow-xl">
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="h-5 w-5 text-indigo-400" />
-        <h2 className="font-display text-base font-bold text-white uppercase tracking-wider">
-          Empirical Taste Insights
+    <div className="obsidian-card p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-[#6366F1]" />
+        <h2 className="font-display text-sm font-semibold text-[#F4F4F5] uppercase tracking-wider">
+          Empirical Insights
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {insights.map((insight) => {
           const Icon = ICON_MAP[insight.icon as keyof typeof ICON_MAP] || Sparkles;
           return (
             <div
               key={insight.id}
-              className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4 flex gap-3.5 items-start hover:border-slate-700/80 transition-colors"
+              className="rounded-lg border border-[#27272A] bg-[#09090B] p-3.5 flex gap-3 items-start hover:border-[#3F3F46] transition-colors"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-0.5">
-                <Icon className="h-4 w-4" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#6366F1]/10 text-[#6366F1] border border-[#6366F1]/20 mt-0.5">
+                <Icon className="h-3.5 w-3.5" />
               </div>
-              <div>
-                <h3 className="text-xs font-bold text-slate-200 mb-1">{insight.title}</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">{insight.description}</p>
+              <div className="space-y-0.5">
+                <h3 className="text-xs font-semibold text-[#F4F4F5]">{insight.title}</h3>
+                <p className="text-xs text-[#71717A] leading-relaxed font-sans">{insight.description}</p>
               </div>
             </div>
           );
