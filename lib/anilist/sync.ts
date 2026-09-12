@@ -187,12 +187,24 @@ export const MOCK_DEMO_ANIMES: SyncedUserAnime[] = [
   },
 ];
 
+import { calculateCharacterMatch } from '../analytics/characterMatcher';
+import { calculateTasteArchetypes } from '../analytics/archetypes';
+import { calculateYouVsAnilist } from '../analytics/youVsAnilist';
+import { calculateHotTakes } from '../analytics/hotTakes';
+import { calculateTastePatterns } from '../analytics/tastePatterns';
+
 export function computeAnalyticsFromUserAnimes(userAnimes: SyncedUserAnime[]) {
   const animeDNA = calculateAnimeDNA(userAnimes);
   const genreStats = calculateAllGenreStats(userAnimes);
   const { scoreStats, meanScore } = calculateScoreStats(userAnimes);
   const { watchStats, totalWatched, episodesWatched, hoursWatched, completionRate } = calculateWatchStats(userAnimes);
   const insights = generateInsights(userAnimes);
+
+  const characterMatch = calculateCharacterMatch(userAnimes);
+  const archetype = calculateTasteArchetypes(userAnimes);
+  const communityBenchmark = calculateYouVsAnilist(userAnimes);
+  const hotTakes = calculateHotTakes(userAnimes);
+  const { awards, experiments } = calculateTastePatterns(userAnimes);
 
   return {
     totalWatched,
@@ -205,6 +217,12 @@ export function computeAnalyticsFromUserAnimes(userAnimes: SyncedUserAnime[]) {
     scoreStats,
     watchStats,
     insights,
+    characterMatch,
+    archetype,
+    communityBenchmark,
+    hotTakes,
+    awards,
+    experiments,
     lastCalculatedAt: new Date().toISOString(),
   };
 }

@@ -83,7 +83,7 @@ export default function LibraryPage() {
               ))}
             </div>
           ) : (
-            <LibraryView library={library} />
+            <LibraryView library={library} onRefresh={loadLibraryData} />
           )}
         </main>
       </div>

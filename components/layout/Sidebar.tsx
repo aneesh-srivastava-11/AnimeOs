@@ -20,14 +20,6 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-56 border-r border-[#27272A] bg-[#09090B] min-h-[calc(100vh-4rem)] p-4 space-y-6 shrink-0">
-      {/* Brand Header */}
-      <div className="px-3 py-1 flex items-center gap-2">
-        <span className="text-[#6366F1] font-bold text-lg leading-none">◈</span>
-        <span className="font-display text-base font-bold tracking-tight text-[#F4F4F5]">
-          ANIMEOS
-        </span>
-      </div>
-
       {/* Main Navigation */}
       <div className="space-y-1">
         <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#71717A] mb-1.5">

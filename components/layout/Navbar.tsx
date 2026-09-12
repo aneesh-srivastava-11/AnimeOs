@@ -27,7 +27,7 @@ export function Navbar({ user, onSync, isSyncing }: NavbarProps) {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-[#27272A] bg-[#09090B]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Mobile Menu & Brand */}
           <div className="flex items-center gap-3">
             <button
@@ -53,7 +53,7 @@ export function Navbar({ user, onSync, isSyncing }: NavbarProps) {
           </div>
 
           {/* Search Bar Input (Mockup / Global Action) */}
-          <div className="hidden sm:flex items-center max-w-xs w-full">
+          <div className="hidden sm:flex items-center max-w-xs w-full mx-4">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#71717A]" />
               <input
@@ -92,20 +92,20 @@ export function Navbar({ user, onSync, isSyncing }: NavbarProps) {
                 <div className="relative">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
-                    className="flex items-center gap-2 rounded-full border border-[#27272A] p-1 transition-colors hover:border-[#6366F1]"
+                    className="flex items-center gap-2 rounded-full border border-[#27272A] bg-[#141417] px-2.5 py-1 transition-colors hover:border-[#6366F1]"
                   >
                     {user.avatar ? (
                       <img
                         src={user.avatar}
                         alt={user.username}
-                        className="h-7 w-7 rounded-full object-cover"
+                        className="h-6 w-6 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1] font-semibold text-xs">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1] font-semibold text-xs">
                         {user.username[0]?.toUpperCase() || <UserIcon className="h-3.5 w-3.5" />}
                       </div>
                     )}
-                    <span className="hidden pr-2 text-xs font-medium text-[#F4F4F5] sm:inline-block">
+                    <span className="hidden text-xs font-medium text-[#F4F4F5] sm:inline-block">
                       {user.username}
                     </span>
                   </button>

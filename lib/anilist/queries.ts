@@ -14,8 +14,8 @@ export const GET_VIEWER_PROFILE = `
 `;
 
 export const GET_USER_MEDIA_LIST = `
-  query ($userId: Int) {
-    MediaListCollection(userId: $userId, type: ANIME) {
+  query ($userId: Int, $type: MediaType = ANIME) {
+    MediaListCollection(userId: $userId, type: $type) {
       lists {
         name
         isCustomList
@@ -48,6 +48,7 @@ export const GET_USER_MEDIA_LIST = `
             }
             description(asHtml: false)
             episodes
+            chapters
             duration
             status
             format
