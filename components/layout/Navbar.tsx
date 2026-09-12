@@ -136,12 +136,12 @@ export function Navbar({ user, onSync, isSyncing }: NavbarProps) {
                 </div>
               </>
             ) : (
-              <Link
+              <a
                 href="/api/auth/login"
                 className="inline-flex items-center gap-2 rounded-lg bg-[#6366F1] px-3.5 py-1.5 text-xs font-semibold text-white shadow-md hover:bg-[#4F46E5] transition-all"
               >
                 Connect AniList
-              </Link>
+              </a>
             )}
           </div>
         </div>

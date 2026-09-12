@@ -18,18 +18,18 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
+            <a
               href="/api/auth/demo"
               className="px-3 py-1.5 text-xs font-medium text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors"
             >
               Try Demo
-            </Link>
-            <Link
+            </a>
+            <a
               href="/api/auth/login"
               className="rounded-lg bg-[#6366F1] px-3.5 py-1.5 text-xs font-semibold text-white shadow-md hover:bg-[#4F46E5] transition-all"
             >
               Connect AniList
-            </Link>
+            </a>
           </div>
         </div>
       </header>
@@ -54,19 +54,19 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link
+            <a
               href="/api/auth/login"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-[#6366F1] px-6 py-3 text-xs font-semibold text-white shadow-lg hover:bg-[#4F46E5] transition-all"
             >
               <span>Connect AniList</span>
               <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <Link
+            </a>
+            <a
               href="/api/auth/demo"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-[#27272A] bg-[#141417] px-6 py-3 text-xs font-semibold text-[#F4F4F5] hover:bg-[#18181C] transition-all"
             >
               <span>Explore Demo Dashboard</span>
-            </Link>
+            </a>
           </div>
         </div>
 
