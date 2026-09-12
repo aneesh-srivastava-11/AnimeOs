@@ -1,10 +1,16 @@
 import { fetchAniListGraphQL } from './client';
-import { GET_USER_MEDIA_LIST } from './queries';
+import { GET_USER_MEDIA_LIST, GET_PUBLIC_USER_DATA } from './queries';
 import { calculateAnimeDNA, calculateAllGenreStats } from '../analytics/animeDNA';
 import { calculateScoreStats } from '../analytics/scoreAnalysis';
 import { calculateWatchStats } from '../analytics/watchAnalysis';
 import { generateInsights } from '../analytics/insights';
 import { SyncedUserAnime } from '@/types/analytics';
+
+export interface UserProfileInfo {
+  username: string;
+  avatar?: string;
+  bannerImage?: string;
+}
 
 export interface AniListListEntry {
   id: number;
@@ -227,31 +233,72 @@ export function computeAnalyticsFromUserAnimes(userAnimes: SyncedUserAnime[]) {
   };
 }
 
-export async function syncUserAniList(userId: string, anilistId: number, accessToken?: string) {
-  // If no accessToken or demo user, use demo dataset
-  if (!accessToken || userId.startsWith('demo')) {
+export async function syncUserAniList(
+  userId: string,
+  anilistId: number,
+  accessToken?: string,
+  username?: string
+) {
+  // If explicitly demo user with no requested username, use demo dataset
+  const isDemo = (userId === 'demo-user-1' || userId.startsWith('demo')) && !username && (!anilistId || anilistId === 999999) && !accessToken;
+
+  if (isDemo) {
     const analytics = computeAnalyticsFromUserAnimes(MOCK_DEMO_ANIMES);
     return {
       success: true,
       isDemo: true,
       itemsProcessed: MOCK_DEMO_ANIMES.length,
+      userProfile: {
+        username: 'OtakuExplorer',
+        avatar: 'https://s4.anilist.co/file/anilistcdn/user/avatar/large/default.png',
+      },
       analytics,
       userAnimes: MOCK_DEMO_ANIMES,
     };
   }
 
   try {
-    const data = await fetchAniListGraphQL<AniListMediaListCollectionResponse>(
-      GET_USER_MEDIA_LIST,
-      { userId: anilistId },
-      accessToken
-    );
+    let data: any;
+
+    if (accessToken && !username && anilistId && anilistId !== 999999) {
+      // Authenticated sync for current logged-in user
+      data = await fetchAniListGraphQL<AniListMediaListCollectionResponse>(
+        GET_USER_MEDIA_LIST,
+        { userId: anilistId },
+        accessToken
+      );
+    } else {
+      // Public profile sync (by username or anilistId) without requiring accessToken
+      const variables: Record<string, unknown> = {};
+      if (username) {
+        variables.userName = username;
+      } else if (anilistId && anilistId !== 999999) {
+        variables.userId = anilistId;
+      } else {
+        throw new Error('No valid username or anilistId provided for sync');
+      }
+
+      data = await fetchAniListGraphQL<any>(
+        GET_PUBLIC_USER_DATA,
+        variables,
+        accessToken
+      );
+    }
+
+    const userObj = data.User;
+    const userProfile: UserProfileInfo | undefined = userObj
+      ? {
+          username: userObj.name,
+          avatar: userObj.avatar?.large || userObj.avatar?.medium,
+          bannerImage: userObj.bannerImage,
+        }
+      : undefined;
 
     const lists = data.MediaListCollection?.lists || [];
     const parsedAnimes: SyncedUserAnime[] = [];
 
-    lists.forEach((list) => {
-      list.entries.forEach((entry) => {
+    lists.forEach((list: any) => {
+      list.entries?.forEach((entry: any) => {
         const media = entry.media;
         if (!media) return;
 
@@ -275,9 +322,9 @@ export async function syncUserAniList(userId: string, anilistId: number, accessT
             duration: media.duration || 24,
             averageScore: media.averageScore || 70,
             format: media.format || 'TV',
-            genres: (media.genres || []).map((g) => ({ genre: { name: g } })),
-            tags: (media.tags || []).map((t) => ({ tag: { name: t.name }, rank: t.rank })),
-            studios: (media.studios?.nodes || []).map((s) => ({ studio: { name: s.name } })),
+            genres: (media.genres || []).map((g: string) => ({ genre: { name: g } })),
+            tags: (media.tags || []).map((t: any) => ({ tag: { name: t.name }, rank: t.rank })),
+            studios: (media.studios?.nodes || []).map((s: any) => ({ studio: { name: s.name } })),
           },
         });
       });
@@ -289,6 +336,7 @@ export async function syncUserAniList(userId: string, anilistId: number, accessT
       success: true,
       isDemo: false,
       itemsProcessed: parsedAnimes.length,
+      userProfile,
       analytics,
       userAnimes: parsedAnimes,
     };
@@ -306,3 +354,4 @@ export async function syncUserAniList(userId: string, anilistId: number, accessT
     };
   }
 }
+

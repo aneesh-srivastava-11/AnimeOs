@@ -3,6 +3,7 @@ import { CharacterMatch, SyncedUserAnime } from '@/types/analytics';
 interface CharacterProfile {
   name: string;
   anime: string;
+  anilistMediaId: number;
   avatarUrl: string;
   quote: string;
   description: string;
@@ -22,7 +23,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'L',
     anime: 'Death Note',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b12-9A4P2Nn4c2vD.png',
+    anilistMediaId: 1535,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b71-1W4panC53vfs.png',
     quote: 'Risking your life and doing something that could easily rob you of your life are exact opposites.',
     description: 'Your taste is analytical, highly psychological, and driven by strategy, mind games, and moral ambiguity.',
     weights: {
@@ -39,7 +41,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Lelouch vi Britannia',
     anime: 'Code Geass',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b417-7wNf0Qc1b7T8.png',
+    anilistMediaId: 1575,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b417-gVLmIJu9phcK.png',
     quote: 'If the king does not lead, how can he expect his subordinates to follow?',
     description: 'You thrive on high-stakes drama, grand strategy, complex characters, and morally gray tactical warfare.',
     weights: {
@@ -56,7 +59,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Guts',
     anime: 'Berserk',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b422-Oa60Q7n2Zz9b.png',
+    anilistMediaId: 33,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b422-XTaiTuvRohsV.png',
     quote: 'He who stumbles and falls, and picks himself up again, is a true warrior.',
     description: 'Your library leans heavily toward intense, dark, visceral narratives with relentless willpower and high stakes.',
     weights: {
@@ -73,7 +77,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Spike Spiegel',
     anime: 'Cowboy Bebop',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b1-YQ2h4bY42J0Z.png',
+    anilistMediaId: 1,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b1-ChxaldmieFlQ.png',
     quote: 'Whatever happens, happens.',
     description: 'You appreciate cool atmosphere, episodic depth, jazz-infused Sci-Fi, and melancholic character arcs.',
     weights: {
@@ -90,7 +95,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Frieren',
     anime: 'Frieren: Beyond Journey\'s End',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b176426-S749tF2tE09C.jpg',
+    anilistMediaId: 154587,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b176754-PCnpqIOkjhFk.png',
     quote: 'It’s what we do with the time after the journey that truly matters.',
     description: 'You savor quiet world-building, profound emotional depth, longevity, and reflective character journeys.',
     weights: {
@@ -107,7 +113,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Senku Ishigami',
     anime: 'Dr. STONE',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b126245-x77C642k4aX2.png',
+    anilistMediaId: 105333,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b126245-B3cm11ZSyXlN.jpg',
     quote: 'Ten billion percent! Science always wins.',
     description: 'You are fascinated by clever problem-solving, world progression, inventions, and logical creativity.',
     weights: {
@@ -124,7 +131,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Rintarou Okabe',
     anime: 'Steins;Gate',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b35252-96uFvCq9B0nO.png',
+    anilistMediaId: 9253,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b35252-DY9TW6pusqeh.png',
     quote: 'El Psy Kongroo.',
     description: 'You love intricate temporal plots, intense psychological tension, sci-fi mechanics, and deep emotional stakes.',
     weights: {
@@ -141,7 +149,8 @@ const CHARACTERS: CharacterProfile[] = [
   {
     name: 'Satoru Gojo',
     anime: 'Jujutsu Kaisen',
-    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b126538-Hq210C358a7e.png',
+    anilistMediaId: 102783,
+    avatarUrl: 'https://s4.anilist.co/file/anilistcdn/character/large/b127691-9zqh1xpIubn7.png',
     quote: 'Throughout Heaven and Earth, I alone am the honored one.',
     description: 'You gravitate toward peak modern animation, flashy high-octane battles, swagger, and charismatic leads.',
     weights: {
@@ -175,7 +184,7 @@ export function calculateCharacterMatch(userAnimes: SyncedUserAnime[]): Characte
     };
   }
 
-  // Calculate User Taste Profile Vector
+  // Calculate User Taste Profile Vector from user's synced library
   let psychoCount = 0;
   let charDrivenCount = 0;
   let darkCount = 0;
@@ -208,7 +217,7 @@ export function calculateCharacterMatch(userAnimes: SyncedUserAnime[]): Characte
     emotional: Math.min(100, Math.round(((charDrivenCount + romanceCount) / (total * 2)) * 200)),
   };
 
-  // Find Best Character Match via weighted distance
+  // Find Best Character Match via weighted distance + library match boosting
   let bestMatch = CHARACTERS[0];
   let bestScore = -Infinity;
 
@@ -218,8 +227,16 @@ export function calculateCharacterMatch(userAnimes: SyncedUserAnime[]): Characte
     keys.forEach((key) => {
       diffSum += Math.abs(userVector[key] - char.weights[key]);
     });
-    // Convert distance to similarity score
-    const similarity = 100 - diffSum / keys.length;
+    // Base similarity score
+    let similarity = 100 - diffSum / keys.length;
+
+    // Dynamic Library Boost: If user watched & scored this anime, boost match score
+    const matchedUserAnime = userAnimes.find((ua) => ua.anime.anilistId === char.anilistMediaId);
+    if (matchedUserAnime) {
+      const userRating = matchedUserAnime.score || 8.0;
+      similarity += (userRating / 10) * 15; // Up to +15 score boost for shows watched & loved
+    }
+
     if (similarity > bestScore) {
       bestScore = similarity;
       bestMatch = char;
@@ -227,6 +244,10 @@ export function calculateCharacterMatch(userAnimes: SyncedUserAnime[]): Characte
   });
 
   const matchPercentage = Math.min(99, Math.max(78, Math.round(bestScore)));
+
+  // If user watched the matched anime, check if they have a cover image to use as avatar fallback
+  const matchedAnimeInLibrary = userAnimes.find((ua) => ua.anime.anilistId === bestMatch.anilistMediaId);
+  const resolvedAvatarUrl = bestMatch.avatarUrl || matchedAnimeInLibrary?.anime.coverImage || '';
 
   // Extract Top 3 Overlapping Traits
   const traits = [
@@ -244,7 +265,7 @@ export function calculateCharacterMatch(userAnimes: SyncedUserAnime[]): Characte
     characterName: bestMatch.name,
     animeTitle: bestMatch.anime,
     matchPercentage,
-    avatarUrl: bestMatch.avatarUrl,
+    avatarUrl: resolvedAvatarUrl,
     quote: bestMatch.quote,
     description: bestMatch.description,
     overlappingTraits: traits.slice(0, 3).map((t) => ({
@@ -254,3 +275,4 @@ export function calculateCharacterMatch(userAnimes: SyncedUserAnime[]): Characte
     })),
   };
 }
+
