@@ -29,10 +29,8 @@ export function SafeImage({
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (candidateIndex + 1 < candidates.length) {
-      // Try next image candidate (e.g. image proxy mirror)
       setCandidateIndex((prev) => prev + 1);
     } else {
-      // Execute custom onError if provided
       if (onError) {
         onError(e);
       }
@@ -56,9 +54,9 @@ export function SafeImage({
       alt={alt}
       className={className}
       referrerPolicy="no-referrer"
-      crossOrigin="anonymous"
       onError={handleError}
     />
   );
 }
+
 
