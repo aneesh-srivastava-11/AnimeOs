@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { SyncedUserAnime } from '@/types/analytics';
 import { X, Save, RefreshCw } from 'lucide-react';
+import { SafeImage } from '@/components/ui/SafeImage';
 
 interface QuickEditModalProps {
   isOpen: boolean;
@@ -63,13 +64,12 @@ export function QuickEditModal({ isOpen, onClose, anime, onSuccess }: QuickEditM
         </button>
 
         <div className="flex items-center gap-3">
-          {anime.anime.coverImage && (
-            <img
-              src={anime.anime.coverImage}
-              alt={anime.anime.titleRomaji}
-              className="h-14 w-10 rounded object-cover border border-[#27272A]"
-            />
-          )}
+          <SafeImage
+            src={anime.anime.coverImage}
+            alt={anime.anime.titleRomaji}
+            className="h-14 w-10 rounded object-cover border border-[#27272A]"
+            fallbackLabel={anime.anime.titleRomaji}
+          />
           <div>
             <h3 className="font-display text-base font-bold text-[#F4F4F5] line-clamp-1">
               {anime.anime.titleEnglish || anime.anime.titleRomaji}

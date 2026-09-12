@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { RefreshCw, LogOut, Search, Menu, User as UserIcon, ExternalLink } from 'lucide-react';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { MobileNav } from './MobileNav';
 
 interface NavbarProps {
@@ -95,10 +96,11 @@ export function Navbar({ user, onSync, isSyncing }: NavbarProps) {
                     className="flex items-center gap-2 rounded-full border border-[#27272A] bg-[#141417] px-2.5 py-1 transition-colors hover:border-[#6366F1]"
                   >
                     {user.avatar ? (
-                      <img
+                      <SafeImage
                         src={user.avatar}
                         alt={user.username}
                         className="h-6 w-6 rounded-full object-cover"
+                        fallbackLabel={user.username}
                       />
                     ) : (
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1] font-semibold text-xs">

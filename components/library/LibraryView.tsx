@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Star, ExternalLink, Filter, ArrowUpDown, Edit3, HelpCircle, Film, BookOpen, Tv } from 'lucide-react';
+import { Search, Star, ExternalLink, Filter, ArrowUpDown, Edit3, HelpCircle, Film, BookOpen, Tv, Share2 } from 'lucide-react';
 import { AnimeExplanation, SyncedUserAnime } from '@/types/analytics';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { SafeImage } from '@/components/ui/SafeImage';
+import { ShareableAnimeCardModal, AnimeShareData } from '@/components/ui/ShareableAnimeCardModal';
 import { ExplainableModal } from './ExplainableModal';
 import { QuickEditModal } from './QuickEditModal';
 import { explainAnimeRating } from '@/lib/analytics/explainability';
@@ -20,6 +22,7 @@ export function LibraryView({ library, onRefresh }: LibraryViewProps) {
   // Modals state
   const [selectedAnimeForEdit, setSelectedAnimeForEdit] = useState<SyncedUserAnime | null>(null);
   const [selectedExplanation, setSelectedExplanation] = useState<AnimeExplanation | null>(null);
+  const [selectedAnimeForShare, setSelectedAnimeForShare] = useState<AnimeShareData | null>(null);
 
   const statuses = ['ALL', 'CURRENT', 'COMPLETED', 'PLANNING', 'DROPPED', 'PAUSED'];
 
@@ -53,6 +56,24 @@ export function LibraryView({ library, onRefresh }: LibraryViewProps) {
   const handleOpenExplanation = (item: SyncedUserAnime) => {
     const exp = explainAnimeRating(item.id, library);
     setSelectedExplanation(exp);
+  };
+
+  const handleShareCard = (item: SyncedUserAnime) => {
+    const exp = explainAnimeRating(item.id, library);
+    setSelectedAnimeForShare({
+      id: item.id,
+      titleRomaji: item.anime.titleRomaji,
+      titleEnglish: item.anime.titleEnglish,
+      coverImage: item.anime.coverImage,
+      score: item.score,
+      averageScore: item.anime.averageScore,
+      status: item.status,
+      episodes: item.anime.episodes,
+      format: item.anime.format,
+      genres: item.anime.genres.map((g) => g.genre.name),
+      whyExplanation: exp.summary,
+      anilistId: item.anime.anilistId,
+    });
   };
 
   return (
@@ -171,17 +192,12 @@ export function LibraryView({ library, onRefresh }: LibraryViewProps) {
             >
               {/* Cover Image & Quick Action Overlay */}
               <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#09090B]">
-                {item.anime.coverImage ? (
-                  <img
-                    src={item.anime.coverImage}
-                    alt={item.anime.titleRomaji}
-                    className="h-full w-full object-cover group-hover:brightness-110 transition-all duration-300"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-[#71717A] text-xs">
-                    No Cover
-                  </div>
-                )}
+                <SafeImage
+                  src={item.anime.coverImage}
+                  alt={item.anime.titleRomaji}
+                  className="h-full w-full object-cover group-hover:brightness-110 transition-all duration-300"
+                  fallbackLabel={item.anime.titleRomaji}
+                />
 
                 {/* Score Badge (Amber #F4B860) */}
                 {item.score > 0 && (
@@ -191,23 +207,32 @@ export function LibraryView({ library, onRefresh }: LibraryViewProps) {
                   </div>
                 )}
 
-                {/* Quick Edit & Explain Overlay Buttons */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                {/* Quick Edit, Explain & Share Overlay Buttons */}
+                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
+                  <button
+                    onClick={() => handleShareCard(item)}
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#6366F1] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#4F46E5] shadow-lg transition-all"
+                    title="Export or share anime card with rating"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    <span>Share Card</span>
+                  </button>
+
                   <button
                     onClick={() => setSelectedAnimeForEdit(item)}
-                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#6366F1] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#4F46E5] shadow-lg transition-all"
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#27272A] bg-[#141417] px-2.5 py-1 text-[11px] font-semibold text-[#F4F4F5] hover:bg-[#18181C] transition-all"
                     title="Edit entry & sync to AniList"
                   >
-                    <Edit3 className="h-3.5 w-3.5" />
+                    <Edit3 className="h-3 w-3" />
                     <span>Edit Entry</span>
                   </button>
 
                   <button
                     onClick={() => handleOpenExplanation(item)}
-                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#27272A] bg-[#141417] px-3 py-1.5 text-[11px] font-semibold text-[#F4F4F5] hover:bg-[#18181C] transition-all"
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#27272A] bg-[#141417] px-2.5 py-1 text-[11px] font-semibold text-[#F4F4F5] hover:bg-[#18181C] transition-all"
                   >
-                    <HelpCircle className="h-3.5 w-3.5 text-[#6366F1]" />
-                    <span>Why I Like This</span>
+                    <HelpCircle className="h-3 w-3 text-[#6366F1]" />
+                    <span>Why I Like</span>
                   </button>
                 </div>
 
@@ -264,7 +289,14 @@ export function LibraryView({ library, onRefresh }: LibraryViewProps) {
         onClose={() => setSelectedExplanation(null)}
         explanation={selectedExplanation}
       />
+
+      <ShareableAnimeCardModal
+        isOpen={!!selectedAnimeForShare}
+        onClose={() => setSelectedAnimeForShare(null)}
+        anime={selectedAnimeForShare}
+      />
     </div>
   );
 }
+
 

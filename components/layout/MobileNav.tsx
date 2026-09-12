@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Library, Compass, User, X, Sparkles, RefreshCw } from 'lucide-react';
+import { SafeImage } from '@/components/ui/SafeImage';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -102,7 +103,7 @@ export function MobileNav({ isOpen, onClose, user, onSync, isSyncing }: MobileNa
           {user && (
             <div className="flex items-center gap-3 px-2 py-1.5">
               {user.avatar ? (
-                <img src={user.avatar} alt={user.username} className="h-8 w-8 rounded-full object-cover border border-[#27272A]" />
+                <SafeImage src={user.avatar} alt={user.username} className="h-8 w-8 rounded-full object-cover border border-[#27272A]" fallbackLabel={user.username} />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-[#18181C] border border-[#27272A] flex items-center justify-center text-xs font-semibold text-[#6366F1]">
                   {user.username[0]?.toUpperCase()}

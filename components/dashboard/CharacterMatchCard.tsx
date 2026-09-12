@@ -1,18 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { CharacterMatch } from '@/types/analytics';
-import { Sparkles, UserCheck } from 'lucide-react';
+import { Sparkles, UserCheck, Download, Share2 } from 'lucide-react';
+import { SafeImage } from '@/components/ui/SafeImage';
+import { downloadCardAsPng } from '@/lib/utils/cardExporter';
 
 interface CharacterMatchCardProps {
   match?: CharacterMatch;
 }
 
 export function CharacterMatchCard({ match }: CharacterMatchCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
   if (!match) return null;
 
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    setDownloading(true);
+    try {
+      await downloadCardAsPng(cardRef.current, `AnimeOS_Personality_${match.characterName}.png`);
+    } catch (err) {
+      alert('Could not download image. Please screenshot!');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-[#27272A] bg-gradient-to-br from-[#12121A] via-[#0F0F14] to-[#09090B] p-6 sm:p-8 shadow-2xl">
+    <div
+      ref={cardRef}
+      className="relative overflow-hidden rounded-2xl border border-[#27272A] bg-gradient-to-br from-[#12121A] via-[#0F0F14] to-[#09090B] p-6 sm:p-8 shadow-2xl"
+    >
       {/* Background Radial Backlight */}
       <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#6366F1]/10 blur-3xl pointer-events-none" />
 
@@ -20,10 +40,11 @@ export function CharacterMatchCard({ match }: CharacterMatchCardProps) {
         {/* Left: Persona Details */}
         <div className="flex items-start sm:items-center gap-5 flex-1">
           <div className="relative shrink-0">
-            <img
+            <SafeImage
               src={match.avatarUrl}
               alt={match.characterName}
               className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover border-2 border-[#6366F1]/40 shadow-xl"
+              fallbackLabel={match.characterName}
             />
             <div className="absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#6366F1] text-white shadow-md">
               <UserCheck className="h-4 w-4" />
@@ -31,9 +52,11 @@ export function CharacterMatchCard({ match }: CharacterMatchCardProps) {
           </div>
 
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#6366F1]/30 bg-[#6366F1]/10 px-3 py-0.5 text-[11px] font-semibold text-[#818CF8]">
-              <Sparkles className="h-3 w-3" />
-              <span>YOUR ANIME PERSONALITY</span>
+            <div className="flex items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#6366F1]/30 bg-[#6366F1]/10 px-3 py-0.5 text-[11px] font-semibold text-[#818CF8]">
+                <Sparkles className="h-3 w-3" />
+                <span>YOUR ANIME PERSONALITY</span>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-baseline gap-2">
@@ -53,7 +76,7 @@ export function CharacterMatchCard({ match }: CharacterMatchCardProps) {
           </div>
         </div>
 
-        {/* Right: Compatibility Score Badge & Trait Overlaps */}
+        {/* Right: Compatibility Score Badge & Trait Overlaps + Download Button */}
         <div className="w-full md:w-72 shrink-0 rounded-xl border border-[#27272A] bg-[#0F0F12]/80 p-4 space-y-3">
           <div className="flex items-center justify-between border-b border-[#1F1F22] pb-2">
             <span className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
@@ -83,8 +106,18 @@ export function CharacterMatchCard({ match }: CharacterMatchCardProps) {
               </div>
             ))}
           </div>
+
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="w-full mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#6366F1]/10 border border-[#6366F1]/30 px-3 py-1.5 text-xs font-semibold text-[#818CF8] hover:bg-[#6366F1] hover:text-white transition-all no-export"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>{downloading ? 'Downloading...' : 'Download Card'}</span>
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
